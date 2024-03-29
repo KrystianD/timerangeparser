@@ -35,11 +35,13 @@ with `hour_only_use_end = False`
 
 | Range string          | Meaning                                                                               |
 |-----------------------|---------------------------------------------------------------------------------------|
+| `0-0`                 | all weekdays, the whole day                                                           |
 | `2`                   | all weekdays between 2:00:00 and 2:59:59                                              |
 | `2-2`                 | all weekdays, the whole day                                                           |
 | `2-5`                 | all weekdays between 2:00:00 and 5:00:00                                              |
 | `2-5:30`              | all weekdays between 2:00:00 and 5:30:00                                              |
 | `2-5:30:10`           | all weekdays between 2:00:00 and 5:30:10                                              |
+| `2-0`                 | all weekdays between 2:00:00 and 23:59:59                                             |
 | `2-24`                | all weekdays between 2:00:00 and 23:59:59                                             |
 | `20-8`                | all weekdays between 20:00:00 and 8:00:00                                             |
 | `mon@`                | on Monday, the whole day                                                              |
@@ -52,11 +54,13 @@ with `hour_only_use_end = True`
 
 | Range string          | Meaning                                                                               |
 |-----------------------|---------------------------------------------------------------------------------------|
+| `0-0`                 | all weekdays, the whole day                                                           |
 | `2`                   | all weekdays between 2:00:00 and 2:59:59                                              |
 | `2-2`                 | all weekdays between 2:00:00 and 2:59:59                                              |
 | `2-5`                 | all weekdays between 2:00:00 and 5:59:59                                              |
 | `2-5:30`              | all weekdays between 2:00:00 and 5:30:59                                              |
 | `2-5:30:10`           | all weekdays between 2:00:00 and 5:30:10                                              |
+| `2-0`                 | all weekdays between 2:00:00 and 0:59:59                                              |
 | `2-24`                | all weekdays between 2:00:00 and 23:59:59                                             |
 | `20-8`                | all weekdays between 20:00:00 and 8:59:59                                             |
 | `mon@`                | on Monday, the whole day                                                              |

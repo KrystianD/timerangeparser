@@ -26,7 +26,10 @@ class ParserTest(unittest.TestCase):
         self.assertParse_hourNotEnd(x, expected)
 
     def test_empty(self) -> None:
-        self.assertParse_both("", [
+        self.assertParse_both("", [])
+
+    def test_whole_day(self) -> None:
+        self.assertParse_hourEnd("0-0", [
             TimeRange(weekdays=WeekdaysRange(weekdays={0, 1, 2, 3, 4, 5, 6}),
                       ranges=[SingleTimeRange(start_time=time(0, 0), end_time=time(23, 59, 59))])
         ])
@@ -92,6 +95,21 @@ class ParserTest(unittest.TestCase):
         ])
 
     def test_hour_end_of_day(self) -> None:
+        self.assertParse_hourEnd("3-0", [
+            TimeRange(weekdays=WeekdaysRange(weekdays={0, 1, 2, 3, 4, 5, 6}),
+                      ranges=[
+                          SingleTimeRange(start_time=time(3, 0), end_time=time(23, 59, 59)),
+                          SingleTimeRange(start_time=time(0, 0), end_time=time(0, 59, 59)),
+                      ])
+        ])
+
+        self.assertParse_hourNotEnd("3-0", [
+            TimeRange(weekdays=WeekdaysRange(weekdays={0, 1, 2, 3, 4, 5, 6}),
+                      ranges=[
+                          SingleTimeRange(start_time=time(3, 0), end_time=time(23, 59, 59)),
+                      ])
+        ])
+
         self.assertParse_both("3-24", [
             TimeRange(weekdays=WeekdaysRange(weekdays={0, 1, 2, 3, 4, 5, 6}),
                       ranges=[
@@ -219,9 +237,43 @@ class ParserTest(unittest.TestCase):
             TimeRange(weekdays=WeekdaysRange(weekdays={0}),
                       ranges=[
                           SingleTimeRange(start_time=time(10, 0), end_time=time(15, 59, 59)),
-                      ]),
+                      ],
+                      action="ON"),
             TimeRange(weekdays=WeekdaysRange(weekdays={1}),
                       ranges=[
                           SingleTimeRange(start_time=time(2, 0), end_time=time(2, 59, 59)),
-                      ])
+                      ],
+                      action="ON")
         ])
+
+    def test_get_action(self) -> None:
+        cfg = TimeRangeParser()
+        cfg.hour_only_use_end = False
+        t = cfg.parse("1-2=VAL1\n5-6=VAL2")
+
+        action = t.get_action(datetime.datetime(2024, 1, 1, 0, 30), "default")
+        self.assertEqual("default", action)
+
+        action = t.get_action(datetime.datetime(2024, 1, 1, 1, 30), "default")
+        self.assertEqual("VAL1", action)
+
+        action = t.get_action(datetime.datetime(2024, 1, 1, 5, 30), "default")
+        self.assertEqual("VAL2", action)
+
+    def test_multiline(self) -> None:
+        cfg = TimeRangeParser()
+        cfg.hour_only_use_end = False
+        t = cfg.parse("1-2=VAL1\n5-6=VAL2")
+
+        self.assertListEqual([
+            TimeRange(weekdays=WeekdaysRange(weekdays={0, 1, 2, 3, 4, 5, 6}),
+                      ranges=[
+                          SingleTimeRange(start_time=time(1, 0), end_time=time(2, 0)),
+                      ],
+                      action="VAL1"),
+            TimeRange(weekdays=WeekdaysRange(weekdays={0, 1, 2, 3, 4, 5, 6}),
+                      ranges=[
+                          SingleTimeRange(start_time=time(5, 0), end_time=time(6, 0)),
+                      ],
+                      action="VAL2"),
+        ], t.time_ranges)

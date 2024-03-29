@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List, Set
+from typing import List, Set, Optional
 
 from timerangeparser.types import WeekdaysRange, SingleTimeRange, TimeRange, TimeRangeCollection
 
@@ -81,6 +81,12 @@ class TimeRangeParser:
 
         if len(p) == 2:
             start_range = parse_time(p[0], False)
+            end_range_exact = parse_time(p[1], False)
+
+            # special case - 0-0, return early
+            if start_range == end_range_exact and start_range.hour == 0:
+                return [SingleTimeRange(StartOfDay, EndOfDay)]
+
             end_range = parse_time(p[1], self.hour_only_use_end)
         else:
             if len(p[0]) == 0:
@@ -97,13 +103,16 @@ class TimeRangeParser:
         if start_range < end_range:
             return [SingleTimeRange(start_range, end_range)]
         else:
-            return [SingleTimeRange(start_range, EndOfDay), SingleTimeRange(StartOfDay, end_range)]
+            if end_range == StartOfDay:
+                return [SingleTimeRange(start_range, EndOfDay)]
+            else:
+                return [SingleTimeRange(start_range, EndOfDay), SingleTimeRange(StartOfDay, end_range)]
 
     def _parse_ranges(self, ranges_str: str) -> List[SingleTimeRange]:
         ranges_str_arr = ranges_str.split(self.separator_ranges)
         return [range_ for range_str in ranges_str_arr for range_ in self._parse_range(range_str)]
 
-    def _parse_entry(self, entry_str: str) -> TimeRange:
+    def _parse_entry(self, entry_str: str, action_str: Optional[str]) -> TimeRange:
         if self.separator_weekdays in entry_str:
             weekdays_str, ranges_str = entry_str.split(self.separator_weekdays, 1)
         else:
@@ -112,14 +121,19 @@ class TimeRangeParser:
         weekdays = self._parse_weekdays_ranges(weekdays_str)
         ranges = self._parse_ranges(ranges_str)
 
-        return TimeRange(weekdays, ranges)
+        return TimeRange(weekdays, ranges, action_str)
 
     def parse(self, x: str) -> TimeRangeCollection:
-        if self.separator_action in x:
-            ranges_str, action_str = x.rsplit(self.separator_action, 1)
-        else:
-            ranges_str, action_str = x, None
+        time_ranges: List[TimeRange] = []
 
-        entries_str_arr = ranges_str.split(self.separator_entries)
+        for line in (x for x in (x.strip() for x in x.splitlines()) if len(x) > 0):
+            if self.separator_action in line:
+                ranges_str, action_str = line.rsplit(self.separator_action, 1)
+            else:
+                ranges_str, action_str = line, None
 
-        return TimeRangeCollection([self._parse_entry(part) for part in entries_str_arr], action_str)
+            entries_str_arr = ranges_str.split(self.separator_entries)
+
+            time_ranges += [self._parse_entry(part, action_str) for part in entries_str_arr]
+
+        return TimeRangeCollection(time_ranges)
