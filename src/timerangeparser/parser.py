@@ -49,6 +49,7 @@ class TimeRangeParser:
         self.separator_ranges = ","
         self.separator_range = "-"
         self.separator_action = "="
+        self.comment_char = "#"
 
     def _parse_weekdays_range(self, weekdays_str: str) -> WeekdaysRange:
         if len(weekdays_str) == 0:
@@ -127,6 +128,9 @@ class TimeRangeParser:
         time_ranges: List[TimeRange] = []
 
         for line in (x for x in (x.strip() for x in x.splitlines()) if len(x) > 0):
+            if line.startswith(self.comment_char):
+                continue
+
             if self.separator_action in line:
                 ranges_str, action_str = line.rsplit(self.separator_action, 1)
             else:

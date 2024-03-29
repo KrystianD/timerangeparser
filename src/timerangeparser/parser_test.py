@@ -277,3 +277,17 @@ class ParserTest(unittest.TestCase):
                       ],
                       action="VAL2"),
         ], t.time_ranges)
+
+    def test_comment(self) -> None:
+        cfg = TimeRangeParser()
+        cfg.hour_only_use_end = False
+        t = cfg.parse("""
+# comment
+# 1-2=VAL1
+5
+""")
+
+        self.assertListEqual([
+            TimeRange(weekdays=WeekdaysRange(weekdays={0, 1, 2, 3, 4, 5, 6}),
+                      ranges=[SingleTimeRange(start_time=time(5, 0), end_time=time(5, 59, 59))])
+        ], t.time_ranges)
