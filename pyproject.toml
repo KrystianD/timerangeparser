@@ -1,0 +1,16 @@
+[project]
+name = "timerangeparser"
+version = "0.1.0"
+description = "Python library for time-ranges parsing with optional action string support"
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+requires-python = ">=3.8"
+keywords = ["time-range"]
+authors = [
+    { name = "Krystian Dużyński" },
+]
+
+dynamic = ["dependencies"]
+
+[project.urls]
+repository = "https://github.com/KrystianD/timerangeparser"
