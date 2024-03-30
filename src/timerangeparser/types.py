@@ -1,3 +1,4 @@
+import calendar
 import datetime
 from dataclasses import dataclass
 from typing import List, Set, Optional
@@ -11,6 +12,11 @@ class SingleTimeRange:
     def check(self, x: datetime.time) -> bool:
         return self.start_time <= datetime.time(x.hour, x.minute, x.second) <= self.end_time
 
+    def pretty(self) -> str:
+        s = f"{self.start_time.hour:02}:{str(self.start_time.minute):02}:{str(self.start_time.second):02}"
+        e = f"{self.end_time.hour:02}:{str(self.end_time.minute):02}:{str(self.end_time.second):02}"
+        return f"{s} - {e}"
+
 
 @dataclass
 class WeekdaysRange:
@@ -18,6 +24,12 @@ class WeekdaysRange:
 
     def check(self, x: datetime.datetime) -> bool:
         return x.weekday() in self.weekdays
+
+    def pretty(self) -> str:
+        if len(self.weekdays) == 7:
+            return "everyday"
+        else:
+            return ",".join(calendar.day_abbr[x].lower() for x in self.weekdays)
 
 
 @dataclass
@@ -28,6 +40,14 @@ class TimeRange:
 
     def check(self, x: datetime.datetime) -> bool:
         return self.weekdays.check(x) and any(rng.check(x.time()) for rng in self.ranges)
+
+    def pretty(self) -> str:
+        s = self.weekdays.pretty()
+        s += " - "
+        s += " | ".join(x.pretty() for x in self.ranges)
+        if self.action is not None:
+            s += f" = {self.action}"
+        return s
 
 
 @dataclass
@@ -42,3 +62,9 @@ class TimeRangeCollection:
             if r.check(x):
                 return r.action
         return default_action
+
+    def pretty(self) -> str:
+        s = "TimeRangeCollection:\n"
+        for r in self.time_ranges:
+            s += "  " + r.pretty() + "\n"
+        return s.strip()
