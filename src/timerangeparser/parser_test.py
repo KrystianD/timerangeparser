@@ -291,3 +291,15 @@ class ParserTest(unittest.TestCase):
             TimeRange(weekdays=WeekdaysRange(weekdays={0, 1, 2, 3, 4, 5, 6}),
                       ranges=[SingleTimeRange(start_time=time(5, 0), end_time=time(5, 59, 59))])
         ], t.time_ranges)
+
+    def test_pretty(self) -> None:
+        cfg = TimeRangeParser()
+        cfg.hour_only_use_end = False
+        t = cfg.parse("1-2\nmon@1,2,3|8")
+
+        self.assertEqual("""
+TimeRangeCollection:
+  mon,tue,wed,thu,fri,sat,sun - 01:00:00 - 02:00:00
+  mon - 01:00:00 - 01:59:59 | 02:00:00 - 02:59:59 | 03:00:00 - 03:59:59
+  mon,tue,wed,thu,fri,sat,sun - 08:00:00 - 08:59:59
+""".strip(), t.pretty())
