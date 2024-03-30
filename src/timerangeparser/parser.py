@@ -90,8 +90,8 @@ class TimeRangeParser:
                 start_range = parse_time(p[0], False)
                 end_range = parse_time(p[0], True)
 
+                # special case - all parts specified, return early
                 if start_range == end_range:
-                    # special case - all parts specified, return early
                     return [SingleTimeRange(start_range, end_range)]
 
         if start_range < end_range:
