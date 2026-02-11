@@ -12,7 +12,7 @@ EndOfWeek = 6
 
 
 def parse_time(x: str, adjust_to_end: bool) -> datetime.time:
-    m = re.match("^(?P<hour>\d\d?)(?::(?P<minute>\d\d?)(?::(?P<second>\d\d?))?)?$", x)
+    m = re.match(r"^(?P<hour>\d\d?)(?::(?P<minute>\d\d?)(?::(?P<second>\d\d?))?)?$", x)
     assert m is not None
 
     hour_str = m.group("hour")
